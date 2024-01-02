@@ -24,6 +24,7 @@ class Application {
 
     start(): void {
         this.scenes.start("Game");
+        this.scenes.start("GoldRushController");
     }
 
     sprite(key: string): PIXI.Sprite {

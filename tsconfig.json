@@ -4,6 +4,6 @@
     "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
-    "typeRoots": ["./node_modules/@types", "./src/custom-types"]
+    "typeRoots": ["./node_modules/@types", "./src/custom-types", "gsap/types"]
   }
 }
