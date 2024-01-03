@@ -11,7 +11,10 @@ export class GoldRushSlotView {
     private logo!: PIXI.Sprite;
     private reelsContainer!: PIXI.Sprite;
     private model: GoldRushModel;
-    private rows: PIXI.Container[] = [];
+    private rows: PIXI.Container[][] = [];
+    private text!: PIXI.Text;
+    private emitter = new PIXI.utils.EventEmitter();
+
     constructor(container: PIXI.Container, model: GoldRushModel) {
         this.container = container;
         this.model = model;
@@ -19,6 +22,21 @@ export class GoldRushSlotView {
         this.createLogo();
         this.createReelsContainer();
         this.createRows();
+    }
+
+    private promises: Promise<void>[] = [];
+
+    public startMoveRows(): Promise<void>[] {
+        let self = this;
+        let iconsToMove: number = 0;
+
+        this.promises = [];
+        this.rows.forEach(function (row:PIXI.Container[], index: number) {
+            self.promises.push(new Promise(function (resolve) {
+                self.moveIcons(row, index, iconsToMove, resolve);
+            }));
+        });Promise.all(this.promises).then(()=> {console.log(this.rows)});
+        return this.promises;
     }
 
     private createBackground(): void {
@@ -53,72 +71,73 @@ export class GoldRushSlotView {
     private createRows(): void {
         for (let i = 0; i < 5; i++) {
             let row: PIXI.Container[] = this.createRow(i);
-            // @ts-ignore
             this.rows.push(row);
         }
-        this.startMoveRows();
     }
-
-     private text!: PIXI.Text;
 
     private createRow(rowIndex: number): PIXI.Container[] {
         let self = this;
         const paddingX: number = 10
         const visibleIcon: number = 3;
         let row: PIXI.Container[] = [];
-        this.model.getIcons().forEach( (icon: string, index: number, array: string[]) => {
+        let currentRow: string[] = [];
+        this.model.getIcons().forEach((icon: string, index: number, array: string[]) => {
             let sprite: PIXI.Sprite = App.sprite(icon);
-
             let iconContainer: PIXI.Container = new PIXI.Container();
             iconContainer.name = icon;
-            this.text = new PIXI.Text(index, { fontFamily: 'Arial', fontSize: 48, fill: 0xff0000 });
+            currentRow.push(iconContainer.name);
+            this.text = new PIXI.Text(index, {fontFamily: 'Arial', fontSize: 48, fill: 0xff0000});
             iconContainer.addChild(sprite);
             iconContainer.addChild(this.text);
             let startPositionY = -sprite.height * (array.length - visibleIcon);
             iconContainer.x = rowIndex * sprite.width + rowIndex * paddingX;
-            iconContainer.y = startPositionY  + index * sprite.height;
-            this.text.text = iconContainer.name;
+            iconContainer.y = startPositionY + index * sprite.height;
+            this.text.text = iconContainer.y;
             self.reelsContainer.addChild(iconContainer);
             row.push(iconContainer);
-
         });
         return row;
     }
 
-    private startMoveRows(): void {
-        let self = this;
-        // @ts-ignore
-        this.rows.forEach(function (row:PIXI.Container[], index: number) {
-            setTimeout(function () {
-                self.moveIcons(row, 15, () => {});
-            }, 120 * index);
-        })
-    }
-
-    private moveIcons(icons: PIXI.Container[], iconsToMove: number, onComplete: Function): void {
+    private moveIcons(icons: PIXI.Container[], rowIndex: number, iconsToMove: number, onComplete: Function): void {
         const self = this;
-        const duration: number = 0.2;
+        const duration: number = 0.125;
         const startPositionY: number = icons[0].position.y
-        const destinationY: number = -icons[length - 1].position.y;
+        const destinationY: number = - icons[length - 1].position.y;
+        let wineLineResult = self.model.getWineLine();
+        let endPositionY = icons[wineLineResult.line[rowIndex]].position.y;
+        let needStop: boolean = false;
+        let waitPrevious: boolean = true;
+        if (rowIndex - 1 < 0) {
+            waitPrevious = false;
+        } else {
+            this.promises[rowIndex - 1].then(() => {
+                waitPrevious = false
+            });
+        }
 
         icons.forEach(function (icon: PIXI.Container, index: number) {
-            let yPosition: number =  index + 1 < icons.length ? icons[index + 1].position.y : destinationY;
+            let yPosition: number = index + 1 < icons.length ? icons[index + 1].position.y : destinationY;
             gsap.to(icon, {
-                duration : duration,
+                duration: duration,
                 y: yPosition,
                 ease: "none",
+                onUpdate: function () {
+                    if (iconsToMove === 0 && (icon.name === wineLineResult.icon && endPositionY === icon.y)) {
+                        needStop = true;
+                    }
+                },
                 onComplete: function () {
                     if (icon.position.y >= destinationY) {
                         icon.position.y = startPositionY;
                         icons.splice(index, 1);
-                        //self.text.text = icons.indexOf(icon);
                         icons.unshift(icon);
-                        if (iconsToMove == 0) {
-                            console.log(icons);
-                            //self.text.text = icons.indexOf(icon);
+
+                        if (needStop && !waitPrevious) {
+                            onComplete && onComplete();
                         } else {
-                            iconsToMove--;
-                            self.moveIcons(icons, iconsToMove, onComplete);
+                            iconsToMove > 0 && iconsToMove--;
+                            self.moveIcons(icons, rowIndex, iconsToMove, onComplete);
                         }
 
                     }
