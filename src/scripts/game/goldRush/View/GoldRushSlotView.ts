@@ -24,37 +24,37 @@ export class GoldRushSlotView {
         this.createRows();
     }
 
-    private promises: Promise<void>[] = [];
+    private rowsQueue: Promise<void>[] = [];
 
     public startMoveRows(): Promise<void>[] {
         let self = this;
         let iconsToMove: number = 0;
 
-        this.promises = [];
+        this.rowsQueue = [];
         this.rows.forEach(function (row:PIXI.Container[], index: number) {
-            self.promises.push(new Promise(function (resolve) {
+            self.rowsQueue.push(new Promise(function (resolve) {
                 self.moveIcons(row, index, iconsToMove, resolve);
             }));
-        });Promise.all(this.promises).then(()=> {console.log(this.rows)});
-        return this.promises;
+        });Promise.all(this.rowsQueue).then(()=> {console.log(this.rows)});
+        return this.rowsQueue;
     }
 
     private createBackground(): void {
         this.background = App.sprite("bg");
         this.container.addChild(this.background);
-        this.background.width = window.innerWidth;
-        this.background.height = window.innerHeight;
+        this.background.width = this.model.getSlotWindowSize().width;
+        this.background.height = this.model.getSlotWindowSize().height;
     }
 
     private createLogo(): void {
         this.logo = App.sprite("logo");
         this.container.addChild(this.logo);
-        this.logo.position.x = window.innerWidth / 2 - this.logo.width / 2;
+        this.logo.position.x = this.background.width / 2 - this.logo.width / 2;
     }
 
     private createReelsContainer(): void {
         this.reelsContainer = App.sprite("reel");
-        this.reelsContainer.position.x = window.innerWidth / 2 - this.reelsContainer.width / 2;
+        this.reelsContainer.position.x = this.background.width / 2 - this.reelsContainer.width / 2;
         this.reelsContainer.position.y = this.logo.height;
         this.container.addChild(this.reelsContainer);
 
@@ -111,7 +111,7 @@ export class GoldRushSlotView {
         if (rowIndex - 1 < 0) {
             waitPrevious = false;
         } else {
-            this.promises[rowIndex - 1].then(() => {
+            this.rowsQueue[rowIndex - 1].then(() => {
                 waitPrevious = false
             });
         }

@@ -10,6 +10,10 @@ export class GoldRushModel {
     private lineV: number[] = [4, 5, 6, 5, 4];
     private wineLineResult!: WineLineResult;
     private lineType!: string;
+    private userCoins: number = 20000000;
+    private bet: number = 100;
+    private minBet: number = 100;
+    private maxBet: number = 1000;
 
     public getIcons(): string[] {
         let icons = this.icons.slice(0);
@@ -17,8 +21,8 @@ export class GoldRushModel {
         return icons;
     }
 
-    public getLineType(): string {
-        return this.lineType;
+    public getSlotWindowSize(): {width: number, height: number} {
+        return {width: 1920, height: 1080};
     }
 
     public wineLine(): void {
@@ -66,6 +70,23 @@ export class GoldRushModel {
 
     public getWineLine(): WineLineResult {
         return this.wineLineResult;
+    }
+
+    public getUserCoins(): number {
+        return this.userCoins;
+    }
+
+    public setCurrentBet(coins: number): void {
+        this.bet = coins;
+    }
+
+    public getCurrentBet(): number {
+        return this.bet;
+    }
+
+    public checkBet(bet: number): boolean {
+        return !(bet < this.minBet || bet > this.maxBet);
+
     }
 
     private shuffleArray(array: any) {
