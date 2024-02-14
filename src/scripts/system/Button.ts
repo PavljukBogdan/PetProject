@@ -1,5 +1,7 @@
 import * as PIXI from 'pixi.js';
 import {App} from "./App";
+import {Tools} from "./Tools"
+import {GoldRushModel} from "../game/goldRush/model/GoldRushModel";
 
 export class Button extends PIXI.Container {
     private normalState: PIXI.Sprite;
@@ -30,21 +32,23 @@ export class Button extends PIXI.Container {
         this.addChild(this.normalState, this.overState, this.pressState, this.disableState);
     }
 
-    private onButtonOver = () => {
+    private onButtonOver = (): void => {
         this.overState.visible = true;
         this.normalState.visible = false;
         this.pressState.visible = false;
         this.disableState.visible = false;
     }
 
-    private onButtonOut = () => {
+    private onButtonOut = (): void => {
         this.normalState.visible = true;
         this.overState.visible = false;
         this.pressState.visible = false;
         this.disableState.visible = false;
     }
 
-    private onButtonDown = () => {
+    private onButtonDown = (): void => {
+        const clickSound: Howl = Tools.playSound(GoldRushModel.SoundsNameSpace.click, 0.75);
+        clickSound.play();
         this.onClick && this.onClick();
         this.pressState.visible = true;
         this.normalState.visible = false;
@@ -52,7 +56,7 @@ export class Button extends PIXI.Container {
         this.overState.visible = false;
     }
 
-    private onButtonUp = () => {
+    private onButtonUp = (): void => {
         this.normalState.visible = true;
         this.pressState.visible = false;
         this.disableState.visible = false;

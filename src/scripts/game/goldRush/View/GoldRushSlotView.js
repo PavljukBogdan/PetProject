@@ -1,25 +1,38 @@
-import * as PIXI from "pixi.js";
-import {App} from "../../../system/App";
-import {GoldRushModel} from "../model/GoldRushModel";
-import {gsap} from "gsap";
-import {Howl} from 'howler';
-import {Tools} from "../../../system/Tools";
-
-export class GoldRushSlotView {
-
-    private static readonly IconNameSpace = {
-        sprite: "iconSprite"
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
     }
-
-    private container: PIXI.Container;
-    private background!: PIXI.Sprite;
-    private logo!: PIXI.Sprite;
-    private reelsContainer!: PIXI.Sprite;
-    private model: GoldRushModel;
-    private rows: PIXI.Container[][] = [];
-    private waitRows: Promise<void>[] = [];
-
-    constructor(container: PIXI.Container, model: GoldRushModel) {
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.GoldRushSlotView = void 0;
+const PIXI = __importStar(require("pixi.js"));
+const App_1 = require("../../../system/App");
+const GoldRushModel_1 = require("../model/GoldRushModel");
+const gsap_1 = require("gsap");
+const Tools_1 = require("../../../system/Tools");
+class GoldRushSlotView {
+    constructor(container, model) {
+        this.rows = [];
+        this.waitRows = [];
         this.container = container;
         this.model = model;
         this.createBackground();
@@ -27,14 +40,12 @@ export class GoldRushSlotView {
         this.createReelsContainer();
         this.createRows();
     }
-
-    public startMoveRows(): Promise<void> {
+    startMoveRows() {
         let self = this;
-
         this.waitRows = [];
-        const reelSound: Howl = Tools.playLoopSound(GoldRushModel.SoundsNameSpace.reels, 0.5);
+        const reelSound = Tools_1.Tools.playLoopSound(GoldRushModel_1.GoldRushModel.SoundsNameSpace.reels, 0.5);
         reelSound.play();
-        this.rows.forEach(function (row: PIXI.Container[], index: number) {
+        this.rows.forEach(function (row, index) {
             self.waitRows.push(new Promise(function (resolve) {
                 self.moveIcons(row, index, resolve);
             }));
@@ -43,34 +54,31 @@ export class GoldRushSlotView {
             reelSound.stop();
         }).then(this.checkRows.bind(this));
     }
-
-    private checkRows(): Promise<void> {
+    checkRows() {
         const self = this;
-        const scaleDown: number = 1;
-        const scaleUp: number = 1.2;
-        const duration: number = 1;
+        const scaleDown = 1;
+        const scaleUp = 1.2;
+        const duration = 1;
         const wineLine = this.model.wineLineResult;
         return new Promise(function (resolve) {
             if (self.model.coinsWinLineTypes.indexOf(wineLine.winType) === -1) {
                 resolve();
                 return;
             }
-            wineLine.line.forEach(function (itemIndex: number, index: number) {
-                let icon: PIXI.Container = self.rows[index][itemIndex];
+            wineLine.line.forEach(function (itemIndex, index) {
+                let icon = self.rows[index][itemIndex];
                 if (icon.name === wineLine.icon) {
                     //@ts-ignore
-                    let sprite: PIXI.Sprite = icon.getChildByName(GoldRushSlotView.IconNameSpace.sprite);
+                    let sprite = icon.getChildByName(GoldRushSlotView.IconNameSpace.sprite);
                     self.playScaleIconAnimation(sprite, duration, scaleUp, () => {
                         self.playScaleIconAnimation(sprite, duration, scaleDown, resolve);
                     });
-
                 }
             });
         });
     }
-
-    private playScaleIconAnimation(sprite: PIXI.Sprite, duration: number, scale: number, onComplete: Function): void {
-        gsap.to(sprite.scale, {
+    playScaleIconAnimation(sprite, duration, scale, onComplete) {
+        gsap_1.gsap.to(sprite.scale, {
             duration,
             x: scale,
             y: scale,
@@ -81,58 +89,50 @@ export class GoldRushSlotView {
             }
         });
     }
-
-    private createBackground(): void {
-        this.background = App.sprite("bg");
+    createBackground() {
+        this.background = App_1.App.sprite("bg");
         this.container.addChild(this.background);
-        this.background.width = GoldRushModel.SlotWindowSize.width;
-        this.background.height = GoldRushModel.SlotWindowSize.height;
-
-        const bkgSound: Howl = Tools.playLoopSound(GoldRushModel.SoundsNameSpace.bkg, 0.65);
+        this.background.width = GoldRushModel_1.GoldRushModel.SlotWindowSize.width;
+        this.background.height = GoldRushModel_1.GoldRushModel.SlotWindowSize.height;
+        const bkgSound = Tools_1.Tools.playLoopSound(GoldRushModel_1.GoldRushModel.SoundsNameSpace.bkg, 0.65);
         bkgSound.play();
     }
-
-    private createLogo(): void {
-        this.logo = App.sprite("logo");
+    createLogo() {
+        this.logo = App_1.App.sprite("logo");
         this.container.addChild(this.logo);
         this.logo.position.x = this.background.width / 2 - this.logo.width / 2;
     }
-
-    private createReelsContainer(): void {
-        this.reelsContainer = App.sprite("reel");
+    createReelsContainer() {
+        this.reelsContainer = App_1.App.sprite("reel");
         this.reelsContainer.position.x = this.background.width / 2 - this.reelsContainer.width / 2;
         this.reelsContainer.position.y = this.logo.height;
         this.container.addChild(this.reelsContainer);
-
-        const mask: PIXI.Graphics = new PIXI.Graphics();
+        const mask = new PIXI.Graphics();
         mask.clear();
         mask.beginFill(0xffffff);
         mask.drawRect(0, 0, this.reelsContainer.width, this.reelsContainer.height);
         mask.endFill();
-
         this.reelsContainer.addChild(mask);
         this.reelsContainer.mask = mask;
     }
-
-    private createRows(): void {
+    createRows() {
         for (let i = 0; i < 5; i++) {
-            let row: PIXI.Container[] = this.createRow(i);
+            let row = this.createRow(i);
             this.rows.push(row);
         }
     }
-
-    private createRow(rowIndex: number): PIXI.Container[] {
+    createRow(rowIndex) {
         let self = this;
-        const paddingX: number = 10
-        const visibleIcon: number = 3;
-        let row: PIXI.Container[] = [];
-        this.model.getIcons().forEach((icon: string, index: number, array: string[]) => {
-            let sprite: PIXI.Sprite = App.sprite(icon);
+        const paddingX = 10;
+        const visibleIcon = 3;
+        let row = [];
+        this.model.getIcons().forEach((icon, index, array) => {
+            let sprite = App_1.App.sprite(icon);
             sprite.name = GoldRushSlotView.IconNameSpace.sprite;
             sprite.anchor.set(0.5);
             sprite.position.x = sprite.width / 2;
             sprite.position.y = sprite.height / 2;
-            let iconContainer: PIXI.Container = new PIXI.Container();
+            let iconContainer = new PIXI.Container();
             iconContainer.name = icon;
             iconContainer.addChild(sprite);
             let startPositionY = -sprite.height * (array.length - visibleIcon);
@@ -143,28 +143,26 @@ export class GoldRushSlotView {
         });
         return row;
     }
-
-    private moveIcons(icons: PIXI.Container[], rowIndex: number, onComplete: Function): void {
+    moveIcons(icons, rowIndex, onComplete) {
         const self = this;
-        const duration: number = 0.125;
-        const startPositionY: number = icons[0].position.y
-        const destinationY: number = -icons[length - 1].position.y;
+        const duration = 0.125;
+        const startPositionY = icons[0].position.y;
+        const destinationY = -icons[length - 1].position.y;
         let wineLineResult = this.model.wineLineResult;
         let endPositionY = icons[wineLineResult.line[rowIndex]].position.y;
-        let needStop: boolean = false;
-        let waitPrevious: boolean = true;
-
+        let needStop = false;
+        let waitPrevious = true;
         if (rowIndex - 1 < 0) {
             waitPrevious = false;
-        } else {
+        }
+        else {
             this.waitRows[rowIndex - 1].then(() => {
-                waitPrevious = false
+                waitPrevious = false;
             });
         }
-
-        icons.forEach(function (icon: PIXI.Container, index: number): void {
-            let positionY: number = index + 1 < icons.length ? icons[index + 1].position.y : destinationY;
-            gsap.to(icon, {
+        icons.forEach(function (icon, index) {
+            let positionY = index + 1 < icons.length ? icons[index + 1].position.y : destinationY;
+            gsap_1.gsap.to(icon, {
                 duration: duration,
                 y: positionY,
                 ease: "none",
@@ -178,17 +176,19 @@ export class GoldRushSlotView {
                         icon.position.y = startPositionY;
                         icons.splice(index, 1);
                         icons.unshift(icon);
-
                         if (needStop && !waitPrevious) {
                             onComplete && onComplete();
-                        } else {
+                        }
+                        else {
                             self.moveIcons(icons, rowIndex, onComplete);
                         }
-
                     }
                 }
             });
         });
-
     }
 }
+exports.GoldRushSlotView = GoldRushSlotView;
+GoldRushSlotView.IconNameSpace = {
+    sprite: "iconSprite"
+};

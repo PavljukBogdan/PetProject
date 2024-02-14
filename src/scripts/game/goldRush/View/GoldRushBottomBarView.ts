@@ -2,6 +2,7 @@ import * as PIXI from "pixi.js";
 import {GoldRushModel} from "../model/GoldRushModel";
 import {App} from "../../../system/App";
 import {Button} from "../../../system/Button";
+import {Tools} from "../../../system/Tools";
 
 export class GoldRushBottomBarView {
     private static readonly buttonTextStyle: PIXI.TextStyle = new PIXI.TextStyle({
@@ -55,6 +56,7 @@ export class GoldRushBottomBarView {
     private betContainer: PIXI.Container = new PIXI.Container();
     private coinValueContainer: PIXI.Container = new PIXI.Container();
     private coinsContainer: PIXI.Container = new PIXI.Container();
+    private clickSound!: Howl;
     private increaseBet! : Function;
     private reduceBet! : Function;
 
@@ -68,11 +70,12 @@ export class GoldRushBottomBarView {
         this.addMaxBetButton();
         this.addCoinsValue();
         this.addCoinBetValue();
+        this.clickSound = Tools.playSound(GoldRushModel.SoundsNameSpace.click, 0.75);
     }
 
     private createBord(): void {
         this.bord = App.sprite("bord");
-        this.bord.position.y = this.model.slotWindowSize.height - this.bord.height;
+        this.bord.position.y = GoldRushModel.SlotWindowSize.height - this.bord.height;
         this.container.addChild(this.bord);
     }
 
@@ -140,10 +143,12 @@ export class GoldRushBottomBarView {
 
         increaseButton.interactive = true;
         reduceButton.on('pointerdown', (): void => {
+            this.clickSound.play();
             self.reduceBet && self.reduceBet();
         });
 
         increaseButton.on('pointerdown', (): void => {
+            this.clickSound.play();
             self.increaseBet && self.increaseBet();
         });
 
@@ -163,30 +168,10 @@ export class GoldRushBottomBarView {
         this.bord.addChild(this.coinValueContainer);
     }
 
-    private animateCoinsField(text: PIXI.Text, newValue: number, currentValue: number): Promise<void> {
-        return new Promise<void>(function (resolve) {
-            let elapsedTime: number = 1;
-            let duration: number = 0.1;
-            function update(delta: number): void {
-                elapsedTime += delta;
-                if (elapsedTime >= duration * 1000) {
-                    text.text = newValue
-                    resolve();
-                    App.app.ticker.remove(update);
-                } else {
-                    const progress = Math.min(1, elapsedTime / (duration * 1000));
-                    const newCoinsValue = Math.floor(currentValue + (newValue - currentValue) * progress);
-                    text.text = newCoinsValue;
-                }
-            }
-            App.app.ticker.add(update);
-        });
-    }
-
     public userCoinsUpdate(newValue: number, currentValue: number): Promise<void> {
         //@ts-ignore
         let coinsText: PIXI.Text = this.coinsContainer.getChildByName(GoldRushBottomBarView.CoinsValueNameSpace.coinsValue);
-        return this.animateCoinsField(coinsText, newValue, currentValue);
+        return Tools.animateCoinsField(coinsText, newValue, currentValue);
     }
 
     public setCurrentBet(bet: number): void {
@@ -248,11 +233,27 @@ export class GoldRushBottomBarView {
         this.reduceBet = onClick;
     }
 
-    public disableSpinButton(): void {
+    public disableAllButtons(): void {
         this.spinButton.setDisabled(true);
+        this.autoPlayButton.setDisabled(true);
+        this.maxBetButton.setDisabled(true);
+        //@ts-ignore
+        const coinsText: PIXI.Text = this.coinValueContainer.getChildByName(GoldRushBottomBarView.CoinBetNameSpace.coinsValue);
+        //@ts-ignore
+        coinsText.getChildByName(GoldRushBottomBarView.CoinBetNameSpace.reduceButton).interactive = false;
+        // @ts-ignore
+        coinsText.getChildByName(GoldRushBottomBarView.CoinBetNameSpace.increaseButton).interactive = false;
     }
 
-    public enableSpinButton(): void {
+    public enableAllButtons(): void {
         this.spinButton.setDisabled(false);
+        this.autoPlayButton.setDisabled(false);
+        this.maxBetButton.setDisabled(false);
+        //@ts-ignore
+        const coinsText: PIXI.Text = this.coinValueContainer.getChildByName(GoldRushBottomBarView.CoinBetNameSpace.coinsValue);
+        //@ts-ignore
+        coinsText.getChildByName(GoldRushBottomBarView.CoinBetNameSpace.reduceButton).interactive = true;
+        // @ts-ignore
+        coinsText.getChildByName(GoldRushBottomBarView.CoinBetNameSpace.increaseButton).interactive = true;
     }
 }

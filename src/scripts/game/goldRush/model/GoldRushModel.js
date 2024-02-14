@@ -1,46 +1,31 @@
-
-
-export class GoldRushModel {
-    private icons: string[] = ['snake','boots','dynamite','gold','coins','barrels','trolley'];
-    private lineTypes: string[] = ['nothing','bigWin','nothing','jackpot','nothing','freeGames','nothing', 'bonus','nothing'];
-    //private lineTypes: string[] = ['bigWin','jackpot','freeGames', 'bonus'];
-    private _coinsWinLineTypes = ['bigWin','jackpot', 'bonus'];
-
-    private topLineIndex: number[] = [4, 4, 4, 4, 4];
-    private middleLineIndex: number[] = [5, 5, 5, 5, 5];
-    private bottomLineIndex: number[] = [6, 6, 6, 6, 6];
-    private defaultLineIndex: number[] = [0, 1, 2, 3, 4];
-    private lineV: number[] = [4, 5, 6, 5, 4];
-    private _wineLineResult!: WineLineResult;
-    private _currentReward!: string;
-    private _userCoins: number = 20000000;
-    private _bet: number = 100;
-    private minBet: number = 100;
-    private _maxBet: number = 1000;
-    private _coinsReward: number = 0;
-    private _freeGames: number = 0;
-    private static soundsPath: string = 'assets/sounds/';
-
-
-    public static readonly SoundsNameSpace = {
-
-        bkg: this.soundsPath + 'bkgSound.mp3',
-        reels: this.soundsPath + 'reelSound.mp3',
-        click: this.soundsPath + 'clickButton.mp3'
+"use strict";
+var _a;
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.GoldRushModel = void 0;
+class GoldRushModel {
+    constructor() {
+        this.icons = ['snake', 'boots', 'dynamite', 'gold', 'coins', 'barrels', 'trolley'];
+        this.lineTypes = ['nothing', 'bigWin', 'nothing', 'jackpot', 'nothing', 'freeGames', 'nothing', 'bonus', 'nothing'];
+        //private lineTypes: string[] = ['bigWin','jackpot','freeGames', 'bonus'];
+        this._coinsWinLineTypes = ['bigWin', 'jackpot', 'bonus'];
+        this.topLineIndex = [4, 4, 4, 4, 4];
+        this.middleLineIndex = [5, 5, 5, 5, 5];
+        this.bottomLineIndex = [6, 6, 6, 6, 6];
+        this.defaultLineIndex = [0, 1, 2, 3, 4];
+        this.lineV = [4, 5, 6, 5, 4];
+        this._userCoins = 20000000;
+        this._bet = 100;
+        this.minBet = 100;
+        this._maxBet = 1000;
+        this._coinsReward = 0;
+        this._freeGames = 0;
     }
-
-    public static readonly SlotWindowSize =  {
-        width: 1920,
-        height: 1080
-    }
-
-    public getIcons(): string[] {
+    getIcons() {
         let icons = this.icons.slice(0);
-        this.shuffleArray(icons)
+        this.shuffleArray(icons);
         return icons;
     }
-
-    public generateWinningResult(): void {
+    generateWinningResult() {
         this._currentReward = this.lineTypes[Math.round(Math.random() * this.lineTypes.length)];
         this._coinsReward = 0;
         console.log(this._currentReward);
@@ -91,82 +76,73 @@ export class GoldRushModel {
                 break;
         }
     }
-
-    public getRewardTypeText(rewardType: string): string {
-        let text: string ='';
+    getRewardTypeText(rewardType) {
+        let text = '';
         switch (rewardType) {
             case 'bigWin':
-                text = 'BIG WIN'
+                text = 'BIG WIN';
                 break;
             case 'jackpot':
-                text = 'BIG WIN'
+                text = 'BIG WIN';
                 break;
             case 'bonus':
-                text = 'BONUS'
+                text = 'BONUS';
                 break;
         }
         return text;
     }
-
-    get coinsReward(): number {
+    get coinsReward() {
         return this._coinsReward;
     }
-
-    public incrementFreeGame(): void {
+    incrementFreeGame() {
         this._freeGames--;
     }
-
-    get freeGame(): number {
+    get freeGame() {
         return this._freeGames;
     }
-
-    get currentReward(): string {
+    get currentReward() {
         return this._currentReward;
     }
-
-    get coinsWinLineTypes(): string[] {
+    get coinsWinLineTypes() {
         return this._coinsWinLineTypes;
     }
-
-    get wineLineResult(): WineLineResult {
+    get wineLineResult() {
         return this._wineLineResult;
     }
-
-    set userCoins(coins: number) {
+    set userCoins(coins) {
         this._userCoins = coins;
     }
-
-    get userCoins(): number {
+    get userCoins() {
         return this._userCoins;
     }
-
-    set bet(bet: number) {
+    set bet(bet) {
         this._bet = bet;
     }
-
-    get bet(): number {
+    get bet() {
         return this._bet;
     }
-
-    get maxBet(): number {
+    get maxBet() {
         return this._maxBet;
     }
-
-    public checkBet(bet: number): boolean {
+    checkBet(bet) {
         return !(bet < this.minBet || bet > this._maxBet);
-
     }
-
-    private shuffleArray(array: any) {
+    shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [array[i], array[j]] = [array[j], array[i]];
         }
     }
 }
-
-interface WineLineResult {
-    winType: string,
-    icon: string,
-    line: number[]
-}
+exports.GoldRushModel = GoldRushModel;
+_a = GoldRushModel;
+GoldRushModel.soundsPath = 'assets/sounds/';
+GoldRushModel.SoundsNameSpace = {
+    bkg: _a.soundsPath + 'bkgSound.mp3',
+    reels: _a.soundsPath + 'reelSound.mp3',
+    click: _a.soundsPath + 'clickButton.mp3'
+};
+GoldRushModel.SlotWindowSize = {
+    width: 1920,
+    height: 1080
+};

@@ -19,6 +19,18 @@ module.exports = {
     module: {
         rules: [
             {
+                test: /\.mp3$/,
+                use: [
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            name: '[name].[ext]',
+                            outputPath: 'assets/sounds/',
+                        },
+                    },
+                ],
+            },
+            {
                 test: /\.tsx?$/,
                 use: 'ts-loader',
                 exclude: /node_modules/,
