@@ -4,6 +4,6 @@ The project was created to practice writing the first slot machine, and to updat
 
  To run the project, follow these steps:
 
- - npm install -g webpack webpack-cli
+ - npm install webpack webpack-cli --save-dev
  - npm run build
  - npm start
